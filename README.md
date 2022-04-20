@@ -21,7 +21,7 @@ To reduce computational cost, it adopts stride 2 for the first convolution layer
     </tr>
     <tr>
     	<td>
-    		<center><img src="./data/monarch.bmp" height="300"></center>
+    		<center><img src="https://github.com/ML-PR/REDnet/blob/main/data/monarch.bmp" height="300"></center>
     	</td>
     	<td>
     		<center><img src="./data/monarch_jpeg_q10.png" height="300"></center>
