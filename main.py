@@ -16,13 +16,13 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--arch', type=str, default='REDNet10', help='REDNet10, REDNet20, REDNet30')
+    parser.add_argument('--arch', type=str, default='REDNet30', help='REDNet10, REDNet20, REDNet30')
     parser.add_argument('--images_dir', type=str, required=True)
-    parser.add_argument('--outputs_dir', type=str, required=True)
-    parser.add_argument('--jpeg_quality', type=int, default=10)
+    parser.add_argument('--outputs_dir', type=str,required=True)
+    parser.add_argument('--jpeg_quality', type=int, default=100)
     parser.add_argument('--patch_size', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--num_epochs', type=int, default=20)
+    parser.add_argument('--num_epochs', type=int, default=5)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--threads', type=int, default=8)
     parser.add_argument('--seed', type=int, default=123)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     if not os.path.exists(opt.outputs_dir):
         os.makedirs(opt.outputs_dir)
 
-    torch.manual_seed(opt.seed)
+    torch.manual_seed(opt.seed) #生成随机种子
 
     if opt.arch == 'REDNet10':
         model = REDNet10()
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     dataset = Dataset(opt.images_dir, opt.patch_size, opt.jpeg_quality, opt.use_fast_loader)
     dataloader = DataLoader(dataset=dataset,
                             batch_size=opt.batch_size,
-                            shuffle=True,
+                            shuffle=False,
                             num_workers=opt.threads,
                             pin_memory=True,
                             drop_last=True)

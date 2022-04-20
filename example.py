@@ -13,11 +13,11 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--arch', type=str, default='REDNet10', help='REDNet10, REDNet20, REDNet30')
+    parser.add_argument('--arch', type=str, default='REDNet30', help='REDNet10, REDNet20, REDNet30')
     parser.add_argument('--weights_path', type=str, required=True)
     parser.add_argument('--image_path', type=str, required=True)
     parser.add_argument('--outputs_dir', type=str, required=True)
-    parser.add_argument('--jpeg_quality', type=int, default=10)
+    parser.add_argument('--jpeg_quality', type=int, default=100)
     opt = parser.parse_args()
 
     if not os.path.exists(opt.outputs_dir):
