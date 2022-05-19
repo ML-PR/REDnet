@@ -17,14 +17,14 @@ class Dataset(object):
     def __init__(self, images_dir, patch_size, jpeg_quality, use_fast_loader=False):
         self.image_files = sorted(glob.glob(images_dir + '/*'))
         self.patch_size = patch_size
-        self.jpeg_quality = jpeg_quality
-        self.use_fast_loader = use_fast_loader
+        self.jpeg_quality = jpeg_quality   #图像质量
+        self.use_fast_loader = use_fast_loader   #加速
 
     def __getitem__(self, idx):
         if self.use_fast_loader:
             label = tf.read_file(self.image_files[idx])
-            label = tf.image.decode_jpeg(label, channels=3)
-            label = pil_image.fromarray(label.numpy())
+            label = tf.image.decode_jpeg(label, channels=3)  #将JPEG编码图像解码为uint8张量.
+            label = pil_image.fromarray(label.numpy()) # array转换成image
         else:
             label = pil_image.open(self.image_files[idx]).convert('RGB')
 

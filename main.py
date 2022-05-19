@@ -22,7 +22,7 @@ if __name__ == '__main__':
     parser.add_argument('--jpeg_quality', type=int, default=100)
     parser.add_argument('--patch_size', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--num_epochs', type=int, default=5)
+    parser.add_argument('--num_epochs', type=int, default=20)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--threads', type=int, default=8)
     parser.add_argument('--seed', type=int, default=123)

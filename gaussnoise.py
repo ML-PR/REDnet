@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def Gaussnoise_func(image, mean=0, var=0.005):
+def Gaussnoise_func(image, mean=0, var=0.225):
     '''
     添加高斯噪声
     mean : 均值
@@ -29,10 +29,9 @@ def Gaussnoise_func(image, mean=0, var=0.005):
 
 # if __name__ == '__main__':
 print('test')
-mean = 2;
-var = 2;
+
 img = cv2.imread("monarch.bmp")
-img_r = Gaussnoise_func(img, mean / 10, var / 100)
+img_r = Gaussnoise_func(img, 0, 0.225)
 
 cv2.imwrite('./monarch_noised.png', img_r)
 # 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
