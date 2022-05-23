@@ -1,13 +1,3 @@
-# 几个文件夹说明：
-
-- train  为原始训练集
-- train1  为加了var=0.01噪声的图像
-- train2  为加了var=0.0225噪声的图像
-- weight1-20-0.01   REDnet30  epoch=20  var=0.01的权重
-- weight2-20-0.0225   REDnet30  epoch=20  var=0.0225的权重
-
- **训练集找的原论文里面的数据集**  就是画红线的部分
-![img.png](img.png)
 
 # RED-Net
 

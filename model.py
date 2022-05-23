@@ -3,22 +3,21 @@ from torch import nn
 
 
 class REDNet10(nn.Module):
-    def __init__(self, num_layers=5, num_features=64):
+    def __init__(self, num_layers=5, num_features=64, image_channels=1):
         super(REDNet10, self).__init__()
         conv_layers = []
         deconv_layers = []
 
-        conv_layers.append(nn.Sequential(nn.Conv2d(3, num_features, kernel_size=3, stride=2, padding=1),
+        conv_layers.append(nn.Sequential(nn.Conv2d(image_channels, num_features, kernel_size=3, stride=2, padding=1),
                                          nn.ReLU(inplace=True)))
         for i in range(num_layers - 1):
             conv_layers.append(nn.Sequential(nn.Conv2d(num_features, num_features, kernel_size=3, padding=1),
                                              nn.ReLU(inplace=True)))
-
         for i in range(num_layers - 1):
             deconv_layers.append(nn.Sequential(nn.ConvTranspose2d(num_features, num_features, kernel_size=3, padding=1),
                                                nn.ReLU(inplace=True)))
-        deconv_layers.append(nn.ConvTranspose2d(num_features, 3, kernel_size=3, stride=2, padding=1, output_padding=1))
-
+        deconv_layers.append(nn.ConvTranspose2d(num_features, image_channels, kernel_size=3, stride=2, padding=1,
+                                                output_padding=0)) # 图像大小：x*y  x,与y 为奇数时，output_padding=0 匹配残差连接
         self.conv_layers = nn.Sequential(*conv_layers)
         self.deconv_layers = nn.Sequential(*deconv_layers)
         self.relu = nn.ReLU(inplace=True)
@@ -33,14 +32,14 @@ class REDNet10(nn.Module):
 
 
 class REDNet20(nn.Module):
-    def __init__(self, num_layers=10, num_features=64):
+    def __init__(self, num_layers=10, num_features=64, image_channels=1):
         super(REDNet20, self).__init__()
         self.num_layers = num_layers
 
         conv_layers = []
         deconv_layers = []
 
-        conv_layers.append(nn.Sequential(nn.Conv2d(3, num_features, kernel_size=3, stride=2, padding=1),
+        conv_layers.append(nn.Sequential(nn.Conv2d(image_channels, num_features, kernel_size=3, stride=2, padding=1),
                                          nn.ReLU(inplace=True)))
         for i in range(num_layers - 1):
             conv_layers.append(nn.Sequential(nn.Conv2d(num_features, num_features, kernel_size=3, padding=1),
@@ -49,8 +48,8 @@ class REDNet20(nn.Module):
         for i in range(num_layers - 1):
             deconv_layers.append(nn.Sequential(nn.ConvTranspose2d(num_features, num_features, kernel_size=3, padding=1),
                                                nn.ReLU(inplace=True)))
-        deconv_layers.append(nn.ConvTranspose2d(num_features, 3, kernel_size=3, stride=2, padding=1, output_padding=1))
-
+        deconv_layers.append(nn.ConvTranspose2d(num_features, image_channels, kernel_size=3, stride=2, padding=1,
+                                                output_padding=0)) # 图像大小：x*y  x,与y 为奇数时，output_padding=0 匹配残差连接
         self.conv_layers = nn.Sequential(*conv_layers)
         self.deconv_layers = nn.Sequential(*deconv_layers)
         self.relu = nn.ReLU(inplace=True)
@@ -80,14 +79,14 @@ class REDNet20(nn.Module):
 
 
 class REDNet30(nn.Module):
-    def __init__(self, num_layers=15, num_features=64):
+    def __init__(self, num_layers=15, num_features=64, image_channels=1):
         super(REDNet30, self).__init__()
         self.num_layers = num_layers
 
         conv_layers = []
         deconv_layers = []
 
-        conv_layers.append(nn.Sequential(nn.Conv2d(3, num_features, kernel_size=3, stride=2, padding=1),
+        conv_layers.append(nn.Sequential(nn.Conv2d(image_channels, num_features, kernel_size=3, stride=2, padding=1),
                                          nn.ReLU(inplace=True)))
         for i in range(num_layers - 1):
             conv_layers.append(nn.Sequential(nn.Conv2d(num_features, num_features, kernel_size=3, padding=1),
@@ -96,8 +95,8 @@ class REDNet30(nn.Module):
         for i in range(num_layers - 1):
             deconv_layers.append(nn.Sequential(nn.ConvTranspose2d(num_features, num_features, kernel_size=3, padding=1),
                                                nn.ReLU(inplace=True)))
-        deconv_layers.append(nn.ConvTranspose2d(num_features, 3, kernel_size=3, stride=2, padding=1, output_padding=1))
-
+        deconv_layers.append(nn.ConvTranspose2d(num_features, image_channels, kernel_size=3, stride=2, padding=1,
+                                                output_padding=0)) # 图像大小：x*y  x,与y 为奇数时，output_padding=0 匹配残差连接
         self.conv_layers = nn.Sequential(*conv_layers)
         self.deconv_layers = nn.Sequential(*deconv_layers)
         self.relu = nn.ReLU(inplace=True)
@@ -119,7 +118,8 @@ class REDNet30(nn.Module):
                 conv_feats_idx += 1
                 x = x + conv_feat
                 x = self.relu(x)
-
+        #print(x.shape, residual.shape)
+        #print(x[0,0 ,41,:], residual)
         x += residual
         x = self.relu(x)
 

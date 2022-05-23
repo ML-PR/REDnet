@@ -7,7 +7,8 @@ import torch.backends.cudnn as cudnn
 from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 from model import REDNet10, REDNet20, REDNet30
-from dataset import Dataset
+import dataset as dg
+from dataset import DenoisingDataset
 from utils import AverageMeter
 
 cudnn.benchmark = True
@@ -17,12 +18,12 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--arch', type=str, default='REDNet30', help='REDNet10, REDNet20, REDNet30')
-    parser.add_argument('--images_dir', type=str, required=True)
-    parser.add_argument('--outputs_dir', type=str,required=True)
-    parser.add_argument('--jpeg_quality', type=int, default=100)
-    parser.add_argument('--patch_size', type=int, default=50)
-    parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--num_epochs', type=int, default=20)
+    parser.add_argument('--images_dir', type=str, default='data/train')
+    parser.add_argument('--outputs_dir', type=str, default='weight')
+    parser.add_argument('--sigma', default=25, type=int, help='noise level')
+    parser.add_argument('--patch_size', type=int, default=41)
+    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--num_epochs', type=int, default=1)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--threads', type=int, default=8)
     parser.add_argument('--seed', type=int, default=123)
@@ -46,13 +47,10 @@ if __name__ == '__main__':
 
     optimizer = optim.Adam(model.parameters(), lr=opt.lr)
 
-    dataset = Dataset(opt.images_dir, opt.patch_size, opt.jpeg_quality, opt.use_fast_loader)
-    dataloader = DataLoader(dataset=dataset,
-                            batch_size=opt.batch_size,
-                            shuffle=False,
-                            num_workers=opt.threads,
-                            pin_memory=True,
-                            drop_last=True)
+    dataset = dg.datagenerator(opt.images_dir, opt.patch_size, opt.batch_size)
+    DDataset = DenoisingDataset(dataset, opt.sigma)
+    dataloader = DataLoader(dataset=DDataset, batch_size=opt.batch_size, shuffle=False, num_workers=opt.threads,
+                            pin_memory=True, drop_last=True)
 
     for epoch in range(opt.num_epochs):
         epoch_losses = AverageMeter()
@@ -76,4 +74,4 @@ if __name__ == '__main__':
                 _tqdm.set_postfix(loss='{:.6f}'.format(epoch_losses.avg))
                 _tqdm.update(len(inputs))
 
-        torch.save(model.state_dict(), os.path.join(opt.outputs_dir, '{}_epoch_{}.pth'.format(opt.arch, epoch)))
+        torch.save(model.state_dict(), os.path.join(opt.outputs_dir, '{}_sigma{}_epoch{}.pth'.format(opt.arch, opt.sigma, epoch)))
