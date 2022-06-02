@@ -10,6 +10,9 @@ from model import REDNet10, REDNet20, REDNet30
 import dataset as dg
 from dataset import DenoisingDataset
 from utils import AverageMeter
+import numpy as np
+from skimage.metrics import peak_signal_noise_ratio
+from skimage.metrics import structural_similarity
 
 cudnn.benchmark = True
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -54,7 +57,8 @@ if __name__ == '__main__':
 
     for epoch in range(opt.num_epochs):
         epoch_losses = AverageMeter()
-
+        PSNR = []
+        SSIM = []
         with tqdm(total=(len(dataset) - len(dataset) % opt.batch_size)) as _tqdm:
             _tqdm.set_description('epoch: {}/{}'.format(epoch + 1, opt.num_epochs))
             for data in dataloader:
@@ -73,5 +77,19 @@ if __name__ == '__main__':
 
                 _tqdm.set_postfix(loss='{:.6f}'.format(epoch_losses.avg))
                 _tqdm.update(len(inputs))
+
+                for i in range(0, opt.batch_size):
+                    p = preds[i]
+                    label = labels[i]
+                    preds_ps = p.mul_(255.0).clamp_(0.0, 255.0).squeeze(0).byte().cpu().numpy()
+                    label_ps = label.mul_(255.0).clamp_(0.0, 255.0).squeeze(0).byte().cpu().numpy()
+
+                    P = peak_signal_noise_ratio(label_ps, preds_ps)
+                    S = structural_similarity(label_ps, preds_ps, channel_axis=1)
+                    PSNR.append(P)
+                    SSIM.append(S)
+        AVG_psnr = np.mean(PSNR)
+        AVG_ssim = np.mean(SSIM)
+        print('epoch:', opt.num_epochs, 'AVG_ssim:', AVG_ssim,'AVG_psnr:', AVG_psnr)
 
         torch.save(model.state_dict(), os.path.join(opt.outputs_dir, '{}_sigma{}_epoch{}.pth'.format(opt.arch, opt.sigma, epoch)))

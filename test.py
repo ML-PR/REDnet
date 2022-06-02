@@ -17,7 +17,7 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--arch', type=str, default='REDNet30', help='REDNet10, REDNet20, REDNet30')
-    parser.add_argument('--weights_path', type=str, default='weight/REDNet30_sigma25_epoch_0.pth')
+    parser.add_argument('--weights_path', type=str, default='weight/REDNet30_sigma25_epoch0.pth')
     parser.add_argument('--image_path', type=str, default='data/Set68')
     parser.add_argument('--outputs_dir', type=str, default='data1')
     parser.add_argument('--sigma', default=25, type=int, help='noise level')
