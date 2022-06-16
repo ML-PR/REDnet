@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--images_dir', type=str, default='data/train')
     parser.add_argument('--outputs_dir', type=str, default='weight')
     parser.add_argument('--sigma', default=25, type=int, help='noise level')
-    parser.add_argument('--patch_size', type=int, default=41)
+    parser.add_argument('--patch_size', type=int, default=161)
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--num_epochs', type=int, default=1)
     parser.add_argument('--lr', type=float, default=1e-4)
@@ -54,19 +54,22 @@ if __name__ == '__main__':
     DDataset = DenoisingDataset(dataset, opt.sigma)
     dataloader = DataLoader(dataset=DDataset, batch_size=opt.batch_size, shuffle=False, num_workers=opt.threads,
                             pin_memory=True, drop_last=True)
-
+    # 每个epoch训练
     for epoch in range(opt.num_epochs):
         epoch_losses = AverageMeter()
         PSNR = []
         SSIM = []
+        LOSS = []
+        # tqdm是训练可视化的模块
         with tqdm(total=(len(dataset) - len(dataset) % opt.batch_size)) as _tqdm:
             _tqdm.set_description('epoch: {}/{}'.format(epoch + 1, opt.num_epochs))
+            # 每个batch训练
             for data in dataloader:
                 inputs, labels = data
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
-                preds = model(inputs)
+                preds = model(inputs)   #模型输入
 
                 loss = criterion(preds, labels)
                 epoch_losses.update(loss.item(), len(inputs))
@@ -78,18 +81,22 @@ if __name__ == '__main__':
                 _tqdm.set_postfix(loss='{:.6f}'.format(epoch_losses.avg))
                 _tqdm.update(len(inputs))
 
-                for i in range(0, opt.batch_size):
-                    p = preds[i]
-                    label = labels[i]
-                    preds_ps = p.mul_(255.0).clamp_(0.0, 255.0).squeeze(0).byte().cpu().numpy()
-                    label_ps = label.mul_(255.0).clamp_(0.0, 255.0).squeeze(0).byte().cpu().numpy()
+                ## 下面计算psnr，ssim，和loss
+                p = preds
+                label = labels
+                preds_ps = p.mul_(255.0).clamp_(0.0, 255.0).squeeze(0).byte().cpu().numpy()
+                label_ps = label.mul_(255.0).clamp_(0.0, 255.0).squeeze(0).byte().cpu().numpy()
 
-                    P = peak_signal_noise_ratio(label_ps, preds_ps)
-                    S = structural_similarity(label_ps, preds_ps, channel_axis=1)
-                    PSNR.append(P)
-                    SSIM.append(S)
+                P = peak_signal_noise_ratio(label_ps, preds_ps)
+                S = structural_similarity(label_ps, preds_ps, channel_axis=1)
+                # 将当前batch的PSNR，SSIM，loss放入数组
+                PSNR.append(P)
+                SSIM.append(S)
+                LOSS.append(loss)
+
         AVG_psnr = np.mean(PSNR)
         AVG_ssim = np.mean(SSIM)
-        print('epoch:', opt.num_epochs, 'AVG_ssim:', AVG_ssim,'AVG_psnr:', AVG_psnr)
+        MSE_LOSS = np.sum(LOSS)
+        print('epoch:', opt.num_epochs, '\tAVG_ssim:', AVG_ssim,'\tAVG_psnr:', AVG_psnr,'\tMSE_Loss:',MSE_LOSS,'\tepoch_loses:',epoch_losses)
 
         torch.save(model.state_dict(), os.path.join(opt.outputs_dir, '{}_sigma{}_epoch{}.pth'.format(opt.arch, opt.sigma, epoch)))
